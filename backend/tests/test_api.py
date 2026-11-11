@@ -25,3 +25,11 @@ def test_article_not_in_force():
 
 def test_article_missing():
     assert client.get("/articles/02/2026/TT-MINHHOA/9/9").json()["detail"] == "Không tìm thấy điều khoản"
+
+
+def test_search_api_top_k():
+    assert len(client.post("/search", json={"query": "minh họa", "top_k": 1}).json()) == 1
+
+
+def test_search_api_empty_query_422():
+    assert client.post("/search", json={"query": ""}).status_code == 422

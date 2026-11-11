@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 TinhTrang = Literal["con_hieu_luc", "het_hieu_luc_mot_phan", "het_hieu_luc"]
 
@@ -78,4 +78,22 @@ class ArticleOut(BaseModel):
     hieu_luc_den: date | None
     nguon_sua_doi: NguonSuaDoi | None
     as_of_date: date
+    minh_hoa: bool
+
+
+class SearchIn(BaseModel):
+    query: str = Field(min_length=1)
+    as_of_date: date | None = None
+    top_k: int = Field(5, ge=1, le=50)
+
+
+class SearchHit(BaseModel):
+    so_hieu: str
+    dieu: str
+    khoan: str
+    tieu_de: str
+    noi_dung: str
+    hieu_luc_tu: date
+    hieu_luc_den: date | None
+    score: float
     minh_hoa: bool

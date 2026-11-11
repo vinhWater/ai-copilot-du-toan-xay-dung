@@ -1,6 +1,6 @@
 from datetime import date
 
-from app.store import DATA_PATH, load, phien_ban_tai, tim_dieu_khoan
+from app.store import DATA_PATH, load, phien_ban_tai, search, tim_dieu_khoan
 
 C = load(DATA_PATH)
 DK = tim_dieu_khoan(C, "02/2026/TT-MINHHOA", "2", "1")
@@ -26,3 +26,13 @@ def test_ngay_truoc_cuoi():
 
 def test_truoc_hieu_luc():
     assert phien_ban_tai(DK, date(2026, 1, 1)) is None
+
+
+def test_search_casefold():
+    hits = search(C, "Bê Tông", date(2026, 8, 1), 5)
+    assert hits and hits[0].so_hieu == "02/2026/TT-MINHHOA" and hits[0].dieu == "1"
+
+
+def test_search_as_of_loc_phien_ban():
+    texts = [h.noi_dung for h in search(C, "Điều 2 Khoản 1", date(2026, 8, 1), 50)]
+    assert texts and not any("gốc" in t for t in texts)

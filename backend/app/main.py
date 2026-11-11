@@ -2,8 +2,8 @@ from datetime import date
 
 from fastapi import FastAPI, HTTPException
 
-from .models import ArticleOut, VanBan
-from .store import DATA_PATH, load, phien_ban_tai, tim_dieu_khoan, tim_van_ban
+from .models import ArticleOut, SearchHit, SearchIn, VanBan
+from .store import DATA_PATH, load, phien_ban_tai, search, tim_dieu_khoan, tim_van_ban
 
 app = FastAPI(
     title="Legal Knowledge API (MOCK — dữ liệu minh họa)",
@@ -35,3 +35,8 @@ def get_article(so_hieu: str, dieu: str, khoan: str, as_of_date: date | None = N
         hieu_luc_tu=pb.hieu_luc_tu, hieu_luc_den=pb.hieu_luc_den, nguon_sua_doi=pb.nguon_sua_doi,
         as_of_date=as_of, minh_hoa=vb.minh_hoa if vb else True,
     )
+
+
+@app.post("/search")
+def post_search(body: SearchIn) -> list[SearchHit]:
+    return search(CORPUS, body.query, body.as_of_date or date.today(), body.top_k)
