@@ -66,3 +66,16 @@ class Corpus(BaseModel):
     dieu_khoan: list[DieuKhoan]
     quan_he: list[QuanHe]
     dinh_muc: list[DinhMuc]
+
+
+class ArticleOut(BaseModel):
+    so_hieu: str
+    dieu: str
+    khoan: str
+    tieu_de: str
+    noi_dung: str
+    hieu_luc_tu: date
+    hieu_luc_den: date | None
+    nguon_sua_doi: NguonSuaDoi | None
+    as_of_date: date
+    minh_hoa: bool
