@@ -33,3 +33,12 @@ def test_search_api_top_k():
 
 def test_search_api_empty_query_422():
     assert client.post("/search", json={"query": ""}).status_code == 422
+
+
+def test_verify_amended():
+    r = client.post("/citations/verify", json={
+        "so_hieu": "02/2026/TT-MINHHOA", "dieu": "2", "khoan": "1",
+        "quote": "đã sửa đổi  Điều 2", "as_of_date": "2026-08-01",
+    }).json()
+    assert r["status"] == "amended" and r["quote_match"] == 1.0
+    assert r["amended_by"][0]["so_hieu"] == "03/2026/TT-MINHHOA"

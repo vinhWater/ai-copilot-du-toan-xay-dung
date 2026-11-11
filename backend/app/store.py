@@ -1,7 +1,8 @@
+from difflib import SequenceMatcher
 from datetime import date
 from pathlib import Path
 
-from .models import Corpus, DieuKhoan, PhienBan, SearchHit, VanBan
+from .models import AmendRef, CitationIn, Corpus, DieuKhoan, PhienBan, SearchHit, VanBan, VerifyOut
 
 DATA_PATH = Path(__file__).parent / "data" / "sample.json"
 
@@ -50,3 +51,29 @@ def search(c: Corpus, query: str, as_of: date, top_k: int) -> list[SearchHit]:
         ))
     hits.sort(key=lambda h: h.score, reverse=True)
     return hits[:top_k]
+
+
+def _norm(s: str) -> str:
+    return " ".join(s.casefold().split())
+
+
+def verify(c: Corpus, cit: CitationIn, as_of: date) -> VerifyOut:
+    def out(**kw) -> VerifyOut:
+        base = dict(citation=cit, exists=True, quote_match=0.0, valid_as_of=as_of, amended_by=[], current_text=None)
+        return VerifyOut(**(base | kw))
+
+    dk = tim_dieu_khoan(c, cit.so_hieu, cit.dieu, cit.khoan)
+    if dk is None:
+        return out(exists=False, status="not_found")
+    pb = phien_ban_tai(dk, as_of)
+    if pb is None:
+        return out(status="not_in_force")
+    amended_by = [
+        AmendRef(so_hieu=p.nguon_sua_doi.so_hieu, dieu=p.nguon_sua_doi.dieu,
+                 khoan=p.nguon_sua_doi.khoan, effective_date=p.hieu_luc_tu)
+        for p in dk.phien_ban if p.nguon_sua_doi and p.hieu_luc_tu <= as_of
+    ]
+    q, text = _norm(cit.quote), _norm(pb.noi_dung)
+    match = 0.0 if not q else 1.0 if q in text else round(SequenceMatcher(None, q, text).ratio(), 2)
+    return out(status="amended" if amended_by else "valid", amended_by=amended_by,
+               quote_match=match, current_text=pb.noi_dung)

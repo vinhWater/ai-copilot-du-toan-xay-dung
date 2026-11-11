@@ -2,8 +2,8 @@ from datetime import date
 
 from fastapi import FastAPI, HTTPException
 
-from .models import ArticleOut, SearchHit, SearchIn, VanBan
-from .store import DATA_PATH, load, phien_ban_tai, search, tim_dieu_khoan, tim_van_ban
+from .models import ArticleOut, CitationIn, SearchHit, SearchIn, VanBan, VerifyOut
+from .store import DATA_PATH, load, phien_ban_tai, search, tim_dieu_khoan, tim_van_ban, verify
 
 app = FastAPI(
     title="Legal Knowledge API (MOCK — dữ liệu minh họa)",
@@ -40,3 +40,8 @@ def get_article(so_hieu: str, dieu: str, khoan: str, as_of_date: date | None = N
 @app.post("/search")
 def post_search(body: SearchIn) -> list[SearchHit]:
     return search(CORPUS, body.query, body.as_of_date or date.today(), body.top_k)
+
+
+@app.post("/citations/verify")
+def post_verify(body: CitationIn) -> VerifyOut:
+    return verify(CORPUS, body, body.as_of_date or date.today())

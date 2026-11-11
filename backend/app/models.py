@@ -97,3 +97,28 @@ class SearchHit(BaseModel):
     hieu_luc_den: date | None
     score: float
     minh_hoa: bool
+
+
+class CitationIn(BaseModel):
+    so_hieu: str
+    dieu: str
+    khoan: str
+    quote: str = ""
+    as_of_date: date | None = None
+
+
+class AmendRef(BaseModel):
+    so_hieu: str
+    dieu: str
+    khoan: str | None
+    effective_date: date
+
+
+class VerifyOut(BaseModel):
+    citation: CitationIn
+    exists: bool
+    quote_match: float
+    valid_as_of: date
+    status: Literal["valid", "amended", "not_in_force", "not_found"]
+    amended_by: list[AmendRef]
+    current_text: str | None
