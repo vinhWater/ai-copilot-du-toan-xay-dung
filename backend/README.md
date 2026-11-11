@@ -28,4 +28,10 @@ docker compose run --rm legal-api pytest -q
 | GET | `/graph/{so_hieu}?depth=1..3` | Chỉ quan hệ đã duyệt |
 | GET | `/norms?ma_hieu=&keyword=` | `ma_hieu` khớp tiền tố |
 
+## Lỗi
+
+404 trả `{"detail": {"code": "...", "message": "..."}}`, `code` ∈ `document_not_found` | `article_not_found` | `not_in_force` — Module 2 rẽ nhánh theo `code`, không theo `message`. 422 là lỗi validate chuẩn FastAPI (`detail` là list).
+
+`as_of_date` bỏ trống = hôm nay theo giờ Việt Nam (Asia/Ho_Chi_Minh).
+
 Chưa có: webhook `document.updated`, Postgres, vector search.

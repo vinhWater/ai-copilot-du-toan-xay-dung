@@ -128,3 +128,12 @@ class GraphOut(BaseModel):
     root: str
     nodes: list[VanBan]
     edges: list[QuanHe]
+
+
+class ErrorDetail(BaseModel):
+    code: Literal["document_not_found", "article_not_found", "not_in_force"]
+    message: str
+
+
+class ErrorOut(BaseModel):
+    detail: ErrorDetail

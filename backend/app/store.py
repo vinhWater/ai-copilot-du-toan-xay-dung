@@ -1,8 +1,9 @@
+import unicodedata
 from difflib import SequenceMatcher
 from datetime import date
 from pathlib import Path
 
-from .models import AmendRef, CitationIn, Corpus, DieuKhoan, DinhMuc, GraphOut, PhienBan, QuanHe, SearchHit, VanBan, VerifyOut
+from .models import AmendRef, CitationIn, Corpus, DieuKhoan, DinhMuc, GraphOut, PhienBan, SearchHit, VanBan, VerifyOut
 
 DATA_PATH = Path(__file__).parent / "data" / "sample.json"
 
@@ -30,17 +31,22 @@ def tim_dieu_khoan(c: Corpus, so_hieu: str, dieu: str, khoan: str) -> DieuKhoan 
     )
 
 
+def _fold(s: str) -> str:
+    """NFC + casefold: tiếng Việt gõ dạng tổ hợp (NFD) vẫn khớp dạng dựng sẵn."""
+    return unicodedata.normalize("NFC", s).casefold()
+
+
 def search(c: Corpus, query: str, as_of: date, top_k: int) -> list[SearchHit]:
     # ponytail: keyword đếm token, thay bằng hybrid pgvector + full-text khi có Postgres
-    q = query.casefold()
+    q = _fold(query)
     tokens = q.split()
     hits: list[SearchHit] = []
     for dk in c.dieu_khoan:
         pb = phien_ban_tai(dk, as_of)
         if pb is None:
             continue
-        text = f"{dk.van_ban} {dk.tieu_de} {pb.noi_dung}".casefold()
-        score = float(sum(t in text for t in tokens)) + (10.0 if dk.van_ban.casefold() in q else 0.0)
+        text = _fold(f"{dk.van_ban} {dk.tieu_de} {pb.noi_dung}")
+        score = float(sum(t in text for t in tokens)) + (10.0 if _fold(dk.van_ban) in q else 0.0)
         if score == 0:
             continue
         vb = tim_van_ban(c, dk.van_ban)
@@ -54,7 +60,7 @@ def search(c: Corpus, query: str, as_of: date, top_k: int) -> list[SearchHit]:
 
 
 def _norm(s: str) -> str:
-    return " ".join(s.casefold().split())
+    return " ".join(_fold(s).split())
 
 
 def verify(c: Corpus, cit: CitationIn, as_of: date) -> VerifyOut:
@@ -85,15 +91,14 @@ def graph(c: Corpus, so_hieu: str, depth: int) -> GraphOut | None:
         return None
     approved = [q for q in c.quan_he if q.trang_thai_duyet == "da_duyet"]
     seen, frontier = {so_hieu}, {so_hieu}
-    edges: list[QuanHe] = []
     for _ in range(depth):
         nxt: set[str] = set()
         for q in approved:
-            if (q.nguon in frontier or q.dich in frontier) and q not in edges:
-                edges.append(q)
+            if q.nguon in frontier or q.dich in frontier:
                 nxt |= {q.nguon, q.dich} - seen
         seen |= nxt
         frontier = nxt
+    edges = [q for q in approved if q.nguon in seen and q.dich in seen]
     nodes = [v for v in c.van_ban if v.so_hieu in seen]
     return GraphOut(root=so_hieu, nodes=nodes, edges=edges)
 
@@ -102,6 +107,6 @@ def norms(c: Corpus, ma_hieu: str | None, keyword: str | None) -> list[DinhMuc]:
     # ponytail: casefold chưa bỏ dấu ("be tong" không khớp "bê tông"); thêm unidecode nếu cần
     return [
         d for d in c.dinh_muc
-        if (not ma_hieu or d.ma_hieu.casefold().startswith(ma_hieu.casefold()))
-        and (not keyword or keyword.casefold() in d.ten_cong_tac.casefold())
+        if (not ma_hieu or _fold(d.ma_hieu).startswith(_fold(ma_hieu)))
+        and (not keyword or _fold(keyword) in _fold(d.ten_cong_tac))
     ]

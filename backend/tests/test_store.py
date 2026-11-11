@@ -80,3 +80,19 @@ def test_norms_ma_hieu():
 
 def test_norms_keyword():
     assert [d.ma_hieu for d in norms(C, None, "BÊ TÔNG")] == ["MH.0001"]
+
+
+def test_search_nfd():
+    import unicodedata
+    assert search(C, unicodedata.normalize("NFD", "bê tông"), date(2026, 8, 1), 5)
+    assert norms(C, None, unicodedata.normalize("NFD", "bê tông"))
+
+
+def test_graph_canh_giua_node_cuoi():
+    from app.models import Corpus, QuanHe, VanBan
+    vb = lambda s: VanBan(so_hieu=s, loai="x", co_quan_ban_hanh="x", ngay_ban_hanh=date(2026, 1, 1),
+                          ngay_hieu_luc=date(2026, 1, 1), tinh_trang="con_hieu_luc")
+    qh = lambda a, b: QuanHe(nguon=a, dich=b, loai="can_cu", trang_thai_duyet="da_duyet")
+    c = Corpus(van_ban=[vb("A"), vb("B"), vb("C")], dieu_khoan=[], dinh_muc=[],
+               quan_he=[qh("B", "A"), qh("C", "A"), qh("B", "C")])
+    assert len(graph(c, "A", 1).edges) == 3

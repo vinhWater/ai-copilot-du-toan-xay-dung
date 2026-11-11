@@ -10,7 +10,8 @@ def test_document_slash():
 
 
 def test_document_404():
-    assert client.get("/documents/99/2026/X").status_code == 404
+    r = client.get("/documents/99/2026/X")
+    assert r.status_code == 404 and r.json()["detail"]["code"] == "document_not_found"
 
 
 def test_article_as_of():
@@ -20,11 +21,11 @@ def test_article_as_of():
 
 def test_article_not_in_force():
     r = client.get("/articles/02/2026/TT-MINHHOA/2/1", params={"as_of_date": "2026-01-01"})
-    assert r.status_code == 404 and "không có hiệu lực" in r.json()["detail"]
+    assert r.status_code == 404 and r.json()["detail"]["code"] == "not_in_force"
 
 
 def test_article_missing():
-    assert client.get("/articles/02/2026/TT-MINHHOA/9/9").json()["detail"] == "Không tìm thấy điều khoản"
+    assert client.get("/articles/02/2026/TT-MINHHOA/9/9").json()["detail"]["code"] == "article_not_found"
 
 
 def test_search_api_top_k():
@@ -54,3 +55,15 @@ def test_graph_api_404():
 
 def test_norms_api_all():
     assert len(client.get("/norms").json()) == 2
+
+
+def test_openapi_khai_bao_404():
+    paths = client.get("/openapi.json").json()["paths"]
+    for p in ["/articles/{so_hieu}/{dieu}/{khoan}", "/documents/{so_hieu}", "/graph/{so_hieu}"]:
+        assert "404" in paths[p]["get"]["responses"]
+
+
+def test_today_vn_lech_utc():
+    from datetime import date, datetime, timezone
+    from app.main import today_vn
+    assert today_vn(datetime(2026, 6, 30, 18, 0, tzinfo=timezone.utc)) == date(2026, 7, 1)
