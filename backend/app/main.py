@@ -2,8 +2,8 @@ from datetime import date
 
 from fastapi import FastAPI, HTTPException, Query
 
-from .models import ArticleOut, CitationIn, GraphOut, SearchHit, SearchIn, VanBan, VerifyOut
-from .store import DATA_PATH, graph, load, phien_ban_tai, search, tim_dieu_khoan, tim_van_ban, verify
+from .models import ArticleOut, CitationIn, DinhMuc, GraphOut, SearchHit, SearchIn, VanBan, VerifyOut
+from .store import DATA_PATH, graph, load, norms, phien_ban_tai, search, tim_dieu_khoan, tim_van_ban, verify
 
 app = FastAPI(
     title="Legal Knowledge API (MOCK — dữ liệu minh họa)",
@@ -53,3 +53,8 @@ def get_graph(so_hieu: str, depth: int = Query(1, ge=1, le=3)) -> GraphOut:
     if g is None:
         raise HTTPException(404, "Không tìm thấy văn bản")
     return g
+
+
+@app.get("/norms")
+def get_norms(ma_hieu: str | None = None, keyword: str | None = None) -> list[DinhMuc]:
+    return norms(CORPUS, ma_hieu, keyword)

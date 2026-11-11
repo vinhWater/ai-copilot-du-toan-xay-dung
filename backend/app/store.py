@@ -2,7 +2,7 @@ from difflib import SequenceMatcher
 from datetime import date
 from pathlib import Path
 
-from .models import AmendRef, CitationIn, Corpus, DieuKhoan, GraphOut, PhienBan, QuanHe, SearchHit, VanBan, VerifyOut
+from .models import AmendRef, CitationIn, Corpus, DieuKhoan, DinhMuc, GraphOut, PhienBan, QuanHe, SearchHit, VanBan, VerifyOut
 
 DATA_PATH = Path(__file__).parent / "data" / "sample.json"
 
@@ -96,3 +96,12 @@ def graph(c: Corpus, so_hieu: str, depth: int) -> GraphOut | None:
         frontier = nxt
     nodes = [v for v in c.van_ban if v.so_hieu in seen]
     return GraphOut(root=so_hieu, nodes=nodes, edges=edges)
+
+
+def norms(c: Corpus, ma_hieu: str | None, keyword: str | None) -> list[DinhMuc]:
+    # ponytail: casefold chưa bỏ dấu ("be tong" không khớp "bê tông"); thêm unidecode nếu cần
+    return [
+        d for d in c.dinh_muc
+        if (not ma_hieu or d.ma_hieu.casefold().startswith(ma_hieu.casefold()))
+        and (not keyword or keyword.casefold() in d.ten_cong_tac.casefold())
+    ]

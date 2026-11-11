@@ -1,7 +1,7 @@
 from datetime import date
 
 from app.models import CitationIn
-from app.store import DATA_PATH, graph, load, phien_ban_tai, search, tim_dieu_khoan, verify
+from app.store import DATA_PATH, graph, load, norms, phien_ban_tai, search, tim_dieu_khoan, verify
 
 C = load(DATA_PATH)
 DK = tim_dieu_khoan(C, "02/2026/TT-MINHHOA", "2", "1")
@@ -72,3 +72,11 @@ def test_graph_depth2():
 
 def test_graph_khong_co():
     assert graph(C, "X", 1) is None
+
+
+def test_norms_ma_hieu():
+    assert [d.ma_hieu for d in norms(C, "mh.0001", None)] == ["MH.0001"]
+
+
+def test_norms_keyword():
+    assert [d.ma_hieu for d in norms(C, None, "BÊ TÔNG")] == ["MH.0001"]

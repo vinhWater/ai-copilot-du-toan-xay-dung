@@ -50,3 +50,7 @@ def test_graph_api_depth_qua_lon():
 
 def test_graph_api_404():
     assert client.get("/graph/99/2026/X").status_code == 404
+
+
+def test_norms_api_all():
+    assert len(client.get("/norms").json()) == 2
