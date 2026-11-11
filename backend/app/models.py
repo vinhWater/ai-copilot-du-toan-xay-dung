@@ -122,3 +122,9 @@ class VerifyOut(BaseModel):
     status: Literal["valid", "amended", "not_in_force", "not_found"]
     amended_by: list[AmendRef]
     current_text: str | None
+
+
+class GraphOut(BaseModel):
+    root: str
+    nodes: list[VanBan]
+    edges: list[QuanHe]

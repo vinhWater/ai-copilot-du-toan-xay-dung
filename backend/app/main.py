@@ -1,9 +1,9 @@
 from datetime import date
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 
-from .models import ArticleOut, CitationIn, SearchHit, SearchIn, VanBan, VerifyOut
-from .store import DATA_PATH, load, phien_ban_tai, search, tim_dieu_khoan, tim_van_ban, verify
+from .models import ArticleOut, CitationIn, GraphOut, SearchHit, SearchIn, VanBan, VerifyOut
+from .store import DATA_PATH, graph, load, phien_ban_tai, search, tim_dieu_khoan, tim_van_ban, verify
 
 app = FastAPI(
     title="Legal Knowledge API (MOCK — dữ liệu minh họa)",
@@ -45,3 +45,11 @@ def post_search(body: SearchIn) -> list[SearchHit]:
 @app.post("/citations/verify")
 def post_verify(body: CitationIn) -> VerifyOut:
     return verify(CORPUS, body, body.as_of_date or date.today())
+
+
+@app.get("/graph/{so_hieu:path}")
+def get_graph(so_hieu: str, depth: int = Query(1, ge=1, le=3)) -> GraphOut:
+    g = graph(CORPUS, so_hieu, depth)
+    if g is None:
+        raise HTTPException(404, "Không tìm thấy văn bản")
+    return g

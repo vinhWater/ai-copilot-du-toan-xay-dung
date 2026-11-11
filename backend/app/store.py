@@ -2,7 +2,7 @@ from difflib import SequenceMatcher
 from datetime import date
 from pathlib import Path
 
-from .models import AmendRef, CitationIn, Corpus, DieuKhoan, PhienBan, SearchHit, VanBan, VerifyOut
+from .models import AmendRef, CitationIn, Corpus, DieuKhoan, GraphOut, PhienBan, QuanHe, SearchHit, VanBan, VerifyOut
 
 DATA_PATH = Path(__file__).parent / "data" / "sample.json"
 
@@ -77,3 +77,22 @@ def verify(c: Corpus, cit: CitationIn, as_of: date) -> VerifyOut:
     match = 0.0 if not q else 1.0 if q in text else round(SequenceMatcher(None, q, text).ratio(), 2)
     return out(status="amended" if amended_by else "valid", amended_by=amended_by,
                quote_match=match, current_text=pb.noi_dung)
+
+
+def graph(c: Corpus, so_hieu: str, depth: int) -> GraphOut | None:
+    """BFS vô hướng qua quan hệ đã duyệt, tối đa `depth` bước."""
+    if tim_van_ban(c, so_hieu) is None:
+        return None
+    approved = [q for q in c.quan_he if q.trang_thai_duyet == "da_duyet"]
+    seen, frontier = {so_hieu}, {so_hieu}
+    edges: list[QuanHe] = []
+    for _ in range(depth):
+        nxt: set[str] = set()
+        for q in approved:
+            if (q.nguon in frontier or q.dich in frontier) and q not in edges:
+                edges.append(q)
+                nxt |= {q.nguon, q.dich} - seen
+        seen |= nxt
+        frontier = nxt
+    nodes = [v for v in c.van_ban if v.so_hieu in seen]
+    return GraphOut(root=so_hieu, nodes=nodes, edges=edges)

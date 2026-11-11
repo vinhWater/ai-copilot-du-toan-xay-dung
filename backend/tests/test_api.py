@@ -42,3 +42,11 @@ def test_verify_amended():
     }).json()
     assert r["status"] == "amended" and r["quote_match"] == 1.0
     assert r["amended_by"][0]["so_hieu"] == "03/2026/TT-MINHHOA"
+
+
+def test_graph_api_depth_qua_lon():
+    assert client.get("/graph/02/2026/TT-MINHHOA", params={"depth": 9}).status_code == 422
+
+
+def test_graph_api_404():
+    assert client.get("/graph/99/2026/X").status_code == 404

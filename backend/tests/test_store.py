@@ -1,7 +1,7 @@
 from datetime import date
 
 from app.models import CitationIn
-from app.store import DATA_PATH, load, phien_ban_tai, search, tim_dieu_khoan, verify
+from app.store import DATA_PATH, graph, load, phien_ban_tai, search, tim_dieu_khoan, verify
 
 C = load(DATA_PATH)
 DK = tim_dieu_khoan(C, "02/2026/TT-MINHHOA", "2", "1")
@@ -57,3 +57,18 @@ def test_verify_not_in_force():
 def test_verify_quote_lech():
     r = verify(C, CitationIn(so_hieu="02/2026/TT-MINHHOA", dieu="2", khoan="1", quote="hoàn toàn khác"), date(2026, 8, 1))
     assert 0.0 <= r.quote_match < 1.0
+
+
+def test_graph_bo_de_xuat():
+    g = graph(C, "03/2026/TT-MINHHOA", 1)
+    assert {e.dich for e in g.edges} == {"02/2026/TT-MINHHOA"}
+
+
+def test_graph_depth2():
+    g = graph(C, "03/2026/TT-MINHHOA", 2)
+    assert {n.so_hieu for n in g.nodes} == {"01/2026/ND-MINHHOA", "02/2026/TT-MINHHOA", "03/2026/TT-MINHHOA"}
+    assert len(g.edges) == 2
+
+
+def test_graph_khong_co():
+    assert graph(C, "X", 1) is None
