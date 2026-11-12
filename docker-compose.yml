@@ -1,5 +1,5 @@
 services:
   legal-api:
-    build: ./backend
+    build: ./module_1
     ports:
       - "8000:8000"
