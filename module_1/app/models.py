@@ -148,6 +148,21 @@ class DuyetOut(BaseModel):
     canh_bao: list[str]
 
 
+class AnhHuong(BaseModel):
+    so_hieu: str
+    dieu: str
+    khoan: str
+    loai: str  # loại quan hệ gây ảnh hưởng
+    ngay_hieu_luc: date | None
+
+
+class ImpactOut(BaseModel):
+    so_hieu: str
+    van_ban: list[str]  # văn bản bị sửa đổi / thay thế / bãi bỏ (kể cả chưa có trong kho)
+    dieu_khoan: list[AnhHuong]
+    dinh_muc: list[str]  # mã hiệu định mức có căn cứ là văn bản bị ảnh hưởng → cần rà soát
+
+
 class ErrorDetail(BaseModel):
     code: Literal["document_not_found", "article_not_found", "not_in_force", "relation_not_found",
                   "relation_not_pending"]

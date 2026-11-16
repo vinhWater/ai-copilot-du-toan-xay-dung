@@ -5,10 +5,11 @@ from pathlib import Path
 from typing import Literal
 from zoneinfo import ZoneInfo
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Query
 
-from .models import (ArticleOut, CitationIn, DinhMuc, DuyetOut, ErrorOut, GraphOut, QuanHe, SearchHit, SearchIn,
-                     VanBan, VerifyOut)
+from .impact import LOAI_THAY_DOI, gui_webhook, phan_tich
+from .models import (ArticleOut, CitationIn, DinhMuc, DuyetOut, ErrorOut, GraphOut, ImpactOut, QuanHe, SearchHit,
+                     SearchIn, VanBan, VerifyOut)
 from .store import DATA_PATH, graph, load, norms, phien_ban_tai, save, search, tim_dieu_khoan, tim_van_ban, verify
 from .validity import ap_dung, tinh_trang
 
@@ -118,13 +119,18 @@ def _pending(rid: str) -> QuanHe:
 
 
 @app.post("/relations/{rid}/approve", responses=REL_ERRORS)
-def approve_relation(rid: str) -> DuyetOut:
-    """Người duyệt xác nhận → ghi vào graph + áp vào phiên bản điều khoản (Validity Agent)."""
+def approve_relation(rid: str, background: BackgroundTasks) -> DuyetOut:
+    """Người duyệt xác nhận → ghi vào graph, áp vào phiên bản điều khoản (Validity Agent),
+    quan hệ làm đổi nội dung thì bắn webhook `document.updated` kèm kết quả Impact Analysis."""
     with LOCK:
         q = _pending(rid)
         q.trang_thai_duyet = "da_duyet"
         canh_bao = ap_dung(CORPUS, q)
         persist()
+        impact = phan_tich(CORPUS, q.nguon) if q.loai in LOAI_THAY_DOI else None
+    if impact:
+        background.add_task(gui_webhook, {"event": "document.updated", "quan_he": q.model_dump(mode="json"),
+                                          "impact": impact.model_dump(mode="json")})
     return DuyetOut(quan_he=q, canh_bao=canh_bao)
 
 
@@ -135,6 +141,14 @@ def reject_relation(rid: str) -> QuanHe:
         q.trang_thai_duyet = "tu_choi"
         persist()
     return q
+
+
+@app.get("/impact/{so_hieu:path}", responses=NOT_FOUND)
+def get_impact(so_hieu: str) -> ImpactOut:
+    """Văn bản `so_hieu` (qua quan hệ đã duyệt) ảnh hưởng điều khoản / định mức nào."""
+    if tim_van_ban(CORPUS, so_hieu) is None and not any(q.nguon == so_hieu for q in CORPUS.quan_he):
+        raise _404("document_not_found", "Không tìm thấy văn bản")
+    return phan_tich(CORPUS, so_hieu)
 
 
 # Pipeline nạp văn bản (POST /ingest) do SV1 phụ trách; chỉ gắn vào khi file có mặt.
