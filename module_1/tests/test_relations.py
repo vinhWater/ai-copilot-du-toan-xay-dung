@@ -54,3 +54,13 @@ def test_evaluate():
     a = QuanHe(nguon="A", dich="B", loai="can_cu", trang_thai_duyet="de_xuat")
     b = QuanHe(nguon="A", dich="C", loai="can_cu", trang_thai_duyet="de_xuat")
     assert evaluate([a, b], [a]) == {"tp": 1, "precision": 0.5, "recall": 1.0}
+
+
+def test_so_hieu_co_dau_cach(tmp_path):
+    import zipfile
+    f = tmp_path / "x.docx"
+    xml = ('<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'
+           '<w:p><w:r><w:t>Số: 91 /2026/VBHN-BXD</w:t></w:r></w:p></w:body></w:document>')
+    with zipfile.ZipFile(f, "w") as z:
+        z.writestr("word/document.xml", xml)
+    assert paragraphs(f) == ["Số: 91/2026/VBHN-BXD"]
