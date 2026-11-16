@@ -1,7 +1,8 @@
+import hashlib
 from datetime import date
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 
 TinhTrang = Literal["con_hieu_luc", "het_hieu_luc_mot_phan", "het_hieu_luc"]
 
@@ -43,6 +44,16 @@ class QuanHe(BaseModel):
     loai: Literal["thay_the", "sua_doi", "bo_sung", "huong_dan", "can_cu", "bai_bo"]
     ngay_hieu_luc: date | None = None
     trang_thai_duyet: Literal["de_xuat", "da_duyet", "tu_choi"]
+    dich_dieu: str | None = None  # quan hệ cấp điều khoản: điều/khoản của văn bản đích
+    dich_khoan: str | None = None
+    noi_dung_moi: str | None = None  # sua_doi/bo_sung: nội dung thay vào điều khoản đích
+    trich_dan: str = ""  # câu gốc làm bằng chứng cho người duyệt
+
+    @computed_field
+    @property
+    def id(self) -> str:
+        key = "|".join([self.nguon, self.loai, self.dich, self.dich_dieu or "", self.dich_khoan or ""])
+        return hashlib.sha1(key.encode()).hexdigest()[:12]
 
 
 class HaoPhi(BaseModel):
