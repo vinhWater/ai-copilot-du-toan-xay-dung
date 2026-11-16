@@ -4,16 +4,17 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, computed_field
 
-TinhTrang = Literal["con_hieu_luc", "het_hieu_luc_mot_phan", "het_hieu_luc"]
+TinhTrang = Literal["chua_co_hieu_luc", "con_hieu_luc", "het_hieu_luc_mot_phan", "het_hieu_luc"]
 
 
 class VanBan(BaseModel):
+    """Văn bản chỉ được viện dẫn (chưa nạp vào kho) có các trường None = chưa có dữ liệu, không đoán."""
     so_hieu: str
-    loai: str
-    co_quan_ban_hanh: str
-    ngay_ban_hanh: date
-    ngay_hieu_luc: date
-    tinh_trang: TinhTrang
+    loai: str = ""
+    co_quan_ban_hanh: str = ""
+    ngay_ban_hanh: date | None = None
+    ngay_hieu_luc: date | None = None
+    tinh_trang: TinhTrang | None = None
     minh_hoa: bool = True
 
 
@@ -44,6 +45,7 @@ class QuanHe(BaseModel):
     loai: Literal["thay_the", "sua_doi", "bo_sung", "huong_dan", "can_cu", "bai_bo"]
     ngay_hieu_luc: date | None = None
     trang_thai_duyet: Literal["de_xuat", "da_duyet", "tu_choi"]
+    nguon_dieu: str | None = None  # điều của văn bản nguồn chứa câu quan hệ
     dich_dieu: str | None = None  # quan hệ cấp điều khoản: điều/khoản của văn bản đích
     dich_khoan: str | None = None
     noi_dung_moi: str | None = None  # sua_doi/bo_sung: nội dung thay vào điều khoản đích
@@ -141,8 +143,14 @@ class GraphOut(BaseModel):
     edges: list[QuanHe]
 
 
+class DuyetOut(BaseModel):
+    quan_he: QuanHe
+    canh_bao: list[str]
+
+
 class ErrorDetail(BaseModel):
-    code: Literal["document_not_found", "article_not_found", "not_in_force"]
+    code: Literal["document_not_found", "article_not_found", "not_in_force", "relation_not_found",
+                  "relation_not_pending"]
     message: str
 
 

@@ -63,7 +63,7 @@ def extract(so_hieu: str, paras: list[str]) -> list[QuanHe]:
         q = QuanHe(nguon=so_hieu, dich=dich, loai=loai, trang_thai_duyet="de_xuat", trich_dan=trich, **kw)
         found.setdefault(q.id, q)
 
-    hieu_luc = next((b for t, b in articles.values() if "hiệu lực" in t.lower()), [])
+    hl_dieu, hieu_luc = next(((d, b) for d, (t, b) in articles.items() if "hiệu lực" in t.lower()), (None, []))
     eff = next((d for p in hieu_luc if "có hiệu lực" in p and (d := _ngay(p))), None)
 
     # 1. Căn cứ: chỉ phần đầu văn bản; bỏ "được sửa đổi, bổ sung bởi ..." (quan hệ giữa các văn bản khác)
@@ -77,7 +77,7 @@ def extract(so_hieu: str, paras: list[str]) -> list[QuanHe]:
         if re.search(r"quy định chi tiết|hướng dẫn", p, re.I):
             for sh, refs in _refs_truoc(p):
                 for khoan, dieu in refs or [(None, None)]:
-                    add("huong_dan", sh, p, dich_dieu=dieu, dich_khoan=khoan, ngay_hieu_luc=eff)
+                    add("huong_dan", sh, p, nguon_dieu="1", dich_dieu=dieu, dich_khoan=khoan, ngay_hieu_luc=eff)
 
     # 3. Điều hiệu lực: thay thế / hết hiệu lực / bãi bỏ
     for p in hieu_luc:
@@ -87,13 +87,13 @@ def extract(so_hieu: str, paras: list[str]) -> list[QuanHe]:
         for sh, refs in _refs_truoc(p):
             if refs:
                 for khoan, dieu in refs:
-                    add("bai_bo", sh, p, dich_dieu=dieu, dich_khoan=khoan, ngay_hieu_luc=eff)
+                    add("bai_bo", sh, p, nguon_dieu=hl_dieu, dich_dieu=dieu, dich_khoan=khoan, ngay_hieu_luc=eff)
             else:
-                add("bai_bo" if "bãi bỏ" in low else "thay_the", sh, p, ngay_hieu_luc=eff)
+                add("bai_bo" if "bãi bỏ" in low else "thay_the", sh, p, nguon_dieu=hl_dieu, ngay_hieu_luc=eff)
 
     # 4. Văn bản sửa đổi: "1. Sửa đổi, bổ sung khoản 2 Điều 5 như sau:" + đoạn nội dung mới
     title_sh = re.findall(SO_HIEU, " ".join(h for h in header if not h.startswith("Căn cứ")).upper())
-    for t, body in articles.values():
+    for so_dieu, (t, body) in articles.items():
         target = (re.findall(SO_HIEU, t.upper()) or title_sh or [None])[-1]
         if target is None:
             continue
@@ -107,7 +107,7 @@ def extract(so_hieu: str, paras: list[str]) -> list[QuanHe]:
                 moi.append(q.strip("“”\""))
             verb = m[1]
             loai = "bai_bo" if verb == "Bãi bỏ" else "bo_sung" if verb == "Bổ sung" else "sua_doi"
-            add(loai, target, p, dich_dieu=m[3], dich_khoan=m[2], ngay_hieu_luc=eff,
+            add(loai, target, p, nguon_dieu=so_dieu, dich_dieu=m[3], dich_khoan=m[2], ngay_hieu_luc=eff,
                 noi_dung_moi="\n".join(moi) or None)
     return list(found.values())
 

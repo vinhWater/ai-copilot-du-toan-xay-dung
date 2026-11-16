@@ -85,11 +85,20 @@ def verify(c: Corpus, cit: CitationIn, as_of: date) -> VerifyOut:
                quote_match=match, current_text=pb.noi_dung)
 
 
+def save(c: Corpus, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(c.model_dump_json(indent=1), encoding="utf-8")
+    tmp.replace(path)
+
+
 def graph(c: Corpus, so_hieu: str, depth: int) -> GraphOut | None:
-    """BFS vô hướng qua quan hệ đã duyệt, tối đa `depth` bước."""
-    if tim_van_ban(c, so_hieu) is None:
-        return None
+    """BFS vô hướng qua quan hệ đã duyệt, tối đa `depth` bước.
+
+    Văn bản chỉ được viện dẫn (chưa nạp vào kho) vẫn là node, các trường để trống."""
     approved = [q for q in c.quan_he if q.trang_thai_duyet == "da_duyet"]
+    if tim_van_ban(c, so_hieu) is None and not any(so_hieu in (q.nguon, q.dich) for q in approved):
+        return None
     seen, frontier = {so_hieu}, {so_hieu}
     for _ in range(depth):
         nxt: set[str] = set()
@@ -100,6 +109,7 @@ def graph(c: Corpus, so_hieu: str, depth: int) -> GraphOut | None:
         frontier = nxt
     edges = [q for q in approved if q.nguon in seen and q.dich in seen]
     nodes = [v for v in c.van_ban if v.so_hieu in seen]
+    nodes += [VanBan(so_hieu=s) for s in sorted(seen - {v.so_hieu for v in nodes})]
     return GraphOut(root=so_hieu, nodes=nodes, edges=edges)
 
 

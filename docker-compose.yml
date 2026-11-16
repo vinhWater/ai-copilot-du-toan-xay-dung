@@ -3,3 +3,10 @@ services:
     build: ./module_1
     ports:
       - "8000:8000"
+    environment:
+      CORPUS_PATH: /app/state/corpus.json
+    volumes:
+      - legal-state:/app/state
+
+volumes:
+  legal-state:
