@@ -9,5 +9,15 @@ services:
     volumes:
       - legal-state:/app/state
 
+  graph-view:
+    build:
+      context: ./module_1/frontend
+      args:
+        LEGAL_API_URL: http://legal-api:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - legal-api
+
 volumes:
   legal-state:
