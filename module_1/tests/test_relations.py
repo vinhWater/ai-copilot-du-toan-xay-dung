@@ -64,3 +64,59 @@ def test_so_hieu_co_dau_cach(tmp_path):
     with zipfile.ZipFile(f, "w") as z:
         z.writestr("word/document.xml", xml)
     assert paragraphs(f) == ["Số: 91/2026/VBHN-BXD"]
+
+
+def _rels(so_hieu: str, paras: list[str]) -> set[tuple]:
+    return {(q.loai, q.dich, q.dich_dieu, q.dich_khoan) for q in extract(so_hieu, paras)}
+
+
+# Các câu dưới đây chép nguyên văn từ văn bản thật trong data/raw/ (chưa đối chiếu nguồn chính thống)
+def test_thay_the_o_dieu_khoan_thi_hanh_tt38():
+    paras = ["Số: 38/2026/TT-BXD", "Điều 2. Điều khoản thi hành",
+             "1. Thông tư này có hiệu lực kể từ ngày 01 tháng 7 năm 2026.",
+             "2. Thông tư này thay thế Thông tư số 12/2021/TT-BXD, Thông tư số 09/2024/TT-BXD, Thông tư số "
+             "08/2025/TT-BXD và Điều 2 Thông tư số 60/2025/TT-BXD của Bộ trưởng Bộ Xây dựng./."]
+    got = extract("38/2026/TT-BXD", paras)
+    assert {(q.loai, q.dich, q.dich_dieu) for q in got} == {
+        ("thay_the", "12/2021/TT-BXD", None), ("thay_the", "09/2024/TT-BXD", None),
+        ("thay_the", "08/2025/TT-BXD", None), ("thay_the", "60/2025/TT-BXD", "2")}
+    assert all(q.ngay_hieu_luc == date(2026, 7, 1) and q.nguon_dieu == "2" for q in got)
+
+
+def test_thay_the_ngay_tren_dong_dieu_tt37():
+    paras = ["Số: 37/2026/TT-BXD", "Điều 3. Thông tư này có hiệu lực kể từ ngày 01 tháng 7 năm 2026.",
+             "Điều 4. Thông tư này thay thế Thông tư số 13/2021/TT-BXD ngày 31 tháng 8 năm 2021, Thông tư số "
+             "01/2025/TT-BXD ngày 22 tháng 01 năm 2025, Điều 12 Thông tư số 09/2025/TT-BXD ngày 13 tháng 6 năm 2025, "
+             "khoản 6 Điều 1 và Điều 3 Thông tư số 60/2025/TT-BXD ngày 30 tháng 12 năm 2025."]
+    assert _rels("37/2026/TT-BXD", paras) == {
+        ("thay_the", "13/2021/TT-BXD", None, None), ("thay_the", "01/2025/TT-BXD", None, None),
+        ("thay_the", "09/2025/TT-BXD", "12", None), ("thay_the", "60/2025/TT-BXD", "1", "6"),
+        ("thay_the", "60/2025/TT-BXD", "3", None)}
+
+
+def test_bai_bo_bo_so_hieu_trong_phan_mo_ta_tt36_tt32():
+    tt36 = ["Số: 36/2026/TT-BXD", "Điều 16. Hiệu lực thi hành",
+            "1. Thông tư này có hiệu lực thi hành từ ngày 01 tháng 7 năm 2026.",
+            "2. Thông tư này bãi bỏ Thông tư số 11/2021/TT-BXD ngày 31 tháng 8 năm 2021 của Bộ trưởng Bộ Xây dựng về "
+            "hướng dẫn một số nội dung xác định và quản lý chi phí đầu tư xây dựng; Thông tư số 14/2023/TT-BXD ngày 29 "
+            "tháng 12 năm 2023 và Điều 1, Phụ lục III và Phụ lục V Thông tư số 60/2025/TT-BXD ngày 30 tháng 12 năm 2025."]
+    assert _rels("36/2026/TT-BXD", tt36) == {
+        ("bai_bo", "11/2021/TT-BXD", None, None), ("bai_bo", "14/2023/TT-BXD", None, None),
+        ("bai_bo", "60/2025/TT-BXD", "1", None)}
+    tt32 = ["Số: 32/2026/TT-BXD", "Điều 8. Hiệu lực thi hành",
+            "1. Thông tư này có hiệu lực thi hành kể từ ngày 01 tháng 7 năm 2026.",
+            "2. Bãi bỏ các điều 2, 3, 4, 5, 6, 7, 8, 9 và 19 Thông tư số 10/2021/TT-BXD ngày 25 tháng 8 năm 2021 của Bộ "
+            "trưởng Bộ Xây dựng về hướng dẫn một số điều và biện pháp thi hành Nghị định số 06/2021/NĐ-CP ngày 26 tháng "
+            "01 năm 2021 và Nghị định số 44/2016/NĐ-CP ngày 15 tháng 5 năm 2016 của Chính phủ./."]
+    got = _rels("32/2026/TT-BXD", tt32)
+    assert {d for _, sh, d, _ in got} == {"2", "3", "4", "5", "6", "7", "8", "9", "19"}
+    assert {(l, sh) for l, sh, _, _ in got} == {("bai_bo", "10/2021/TT-BXD")}
+
+
+def test_sua_doi_chi_neu_o_ten_van_ban_tt09():
+    paras = ["Số: 09/2024/TT-BXD", "THÔNG TƯ",
+             "SỬA ĐỔI, BỔ SUNG MỘT SỐ ĐỊNH MỨC XÂY DỰNG BAN HÀNH TẠI THÔNG TƯ SỐ 12/2021/TT-BXD NGÀY 31 THÁNG 8 NĂM 2021",
+             "Điều 3. Điều khoản thi hành", "Thông tư này có hiệu lực thi hành kể từ ngày 15 tháng 10 năm 2024./."]
+    got = extract("09/2024/TT-BXD", paras)
+    assert {(q.loai, q.dich, q.dich_dieu) for q in got} == {("sua_doi", "12/2021/TT-BXD", None)}
+    assert got[0].ngay_hieu_luc == date(2024, 10, 15)

@@ -13,7 +13,11 @@ SO_HIEU = r"\d+/\d{4}/[A-ZĐ0-9]+(?:-[A-ZĐ0-9]+)*"
 DIEU = re.compile(r"^Điều\s+(\d+[a-z]?)\.\s*(.*)")
 CHUONG = re.compile(r"^Chương\s+[IVXLC]+\b")
 NGAY = re.compile(r"ngày (\d{1,2}) tháng (\d{1,2}) năm (\d{4})")
-REF = re.compile(r"(?:khoản (\d+[a-z]?) )?Điều (\d+[a-z]?)")
+REF = re.compile(r"(?:khoản (\d+[a-z]?) )?[Đđ]iều ((?:\d+[a-z]?(?:, | và ))*\d+[a-z]?)")  # "các điều 2, 3 và 19"
+# Câu thay thế / bãi bỏ: có thể nằm ở bất kỳ điều nào, kể cả ngay dòng "Điều 4. Thông tư này thay thế …"
+THAY = re.compile(r"này (?:thay thế|bãi bỏ)|được thay thế|hết hiệu lực|^(?:\d+\.\s*)?Bãi bỏ")
+CHU_DONG = re.compile(r"này (?:thay thế|bãi bỏ)|Bãi bỏ")  # đối tượng đứng SAU động từ; bị động thì đứng trước
+MO_TA = re.compile(r"\bvề\b|hướng dẫn|quy định|thi hành|sửa đổi")  # số hiệu sau các từ này là phần mô tả
 AMEND = re.compile(
     r"^\d+\.\s*(Sửa đổi, bổ sung|Sửa đổi|Bổ sung|Bãi bỏ)\s+(?:điểm \S+ )?(?:khoản (\d+[a-z]?) )?Điều (\d+[a-z]?)"
 )
@@ -47,10 +51,37 @@ def _refs_truoc(p: str) -> list[tuple[str, list[tuple[str | None, str]]]]:
     """Mỗi số hiệu trong câu kèm các 'khoản X Điều Y' đứng ngay trước nó (sau số hiệu liền trước)."""
     out, start = [], 0
     for m in re.finditer(SO_HIEU, p):
-        refs = [(r[1], r[2]) for r in REF.finditer(p[start:m.start()])]
+        refs = [(r[1], d) for r in REF.finditer(p[start:m.start()]) for d in re.split(r", | và ", r[2])]
         out.append((m[0], refs))
         start = m.end()
     return out
+
+
+def _doi_tuong(p: str) -> list[tuple[str, list[tuple[str | None, str]]]]:
+    """Số hiệu là đối tượng của câu thay thế/bãi bỏ; bỏ số hiệu nằm trong phần mô tả văn bản trước.
+
+    VD "Bãi bỏ … Thông tư số 10/2021/TT-BXD … hướng dẫn … thi hành Nghị định số 06/2021/NĐ-CP" → chỉ 10/2021.
+    ponytail: heuristic theo từ mô tả + dấu phẩy/chấm phẩy; câu ngoài mẫu → người duyệt bắt, thêm LLM nếu đo thấy tụt.
+    """
+    m = CHU_DONG.search(p)
+    start = m.end() if m else 0
+    out, prev, mo_ta = [], None, False
+    for sm in re.finditer(SO_HIEU, p[start:]):
+        if prev is not None:
+            gap = p[start + prev:start + sm.start()]
+            if re.search(r"[,;]", gap):
+                gap, mo_ta = re.split(r"[,;]", gap)[-1], False
+            mo_ta = mo_ta or bool(MO_TA.search(gap))
+        if not mo_ta:
+            truoc = p[start + (prev or 0):start + sm.start()]
+            out.append((sm[0], [(r[1], d) for r in REF.finditer(truoc) for d in re.split(r", | và ", r[2])]))
+        prev = sm.end()
+    return out
+
+
+def ngay_hieu_luc(articles: dict[str, tuple[str, list[str]]]) -> date | None:
+    """Ngày trong câu "<Văn bản> này có hiệu lực … từ ngày …" — ở bất kỳ điều nào (tiêu đề điều khác nhau)."""
+    return next((d for t, b in articles.values() for p in (t, *b) if "này có hiệu lực" in p and (d := _ngay(p))), None)
 
 
 def extract(so_hieu: str, paras: list[str]) -> list[QuanHe]:
@@ -63,8 +94,7 @@ def extract(so_hieu: str, paras: list[str]) -> list[QuanHe]:
         q = QuanHe(nguon=so_hieu, dich=dich, loai=loai, trang_thai_duyet="de_xuat", trich_dan=trich, **kw)
         found.setdefault(q.id, q)
 
-    hl_dieu, hieu_luc = next(((d, b) for d, (t, b) in articles.items() if "hiệu lực" in t.lower()), (None, []))
-    eff = next((d for p in hieu_luc if "có hiệu lực" in p and (d := _ngay(p))), None)
+    eff = ngay_hieu_luc(articles)
 
     # 1. Căn cứ: chỉ phần đầu văn bản; bỏ "được sửa đổi, bổ sung bởi ..." (quan hệ giữa các văn bản khác)
     for p in header:
@@ -79,17 +109,16 @@ def extract(so_hieu: str, paras: list[str]) -> list[QuanHe]:
                 for khoan, dieu in refs or [(None, None)]:
                     add("huong_dan", sh, p, nguon_dieu="1", dich_dieu=dieu, dich_khoan=khoan, ngay_hieu_luc=eff)
 
-    # 3. Điều hiệu lực: thay thế / hết hiệu lực / bãi bỏ
-    for p in hieu_luc:
-        low = p.lower()
-        if not any(k in low for k in ("hết hiệu lực", "thay thế", "bãi bỏ")):
-            continue
-        for sh, refs in _refs_truoc(p):
-            if refs:
-                for khoan, dieu in refs:
-                    add("bai_bo", sh, p, nguon_dieu=hl_dieu, dich_dieu=dieu, dich_khoan=khoan, ngay_hieu_luc=eff)
-            else:
-                add("bai_bo" if "bãi bỏ" in low else "thay_the", sh, p, nguon_dieu=hl_dieu, ngay_hieu_luc=eff)
+    # 3. Thay thế / hết hiệu lực / bãi bỏ (thường ở điều cuối, tiêu đề điều không cố định)
+    for so_dieu, (t, body) in articles.items():
+        for p in (t, *body):
+            if not THAY.search(p):
+                continue
+            for sh, refs in _doi_tuong(p):
+                # bãi bỏ → bai_bo; thay thế → thay_the; "hết hiệu lực" một phần (có điều/khoản) → bai_bo
+                loai = "bai_bo" if "bãi bỏ" in p.lower() or ("thay thế" not in p and refs) else "thay_the"
+                for khoan, dieu in refs or [(None, None)]:
+                    add(loai, sh, p, nguon_dieu=so_dieu, dich_dieu=dieu, dich_khoan=khoan, ngay_hieu_luc=eff)
 
     # 4. Văn bản sửa đổi: "1. Sửa đổi, bổ sung khoản 2 Điều 5 như sau:" + đoạn nội dung mới
     title_sh = re.findall(SO_HIEU, " ".join(h for h in header if not h.startswith("Căn cứ")).upper())
@@ -109,6 +138,13 @@ def extract(so_hieu: str, paras: list[str]) -> list[QuanHe]:
             loai = "bai_bo" if verb == "Bãi bỏ" else "bo_sung" if verb == "Bổ sung" else "sua_doi"
             add(loai, target, p, nguon_dieu=so_dieu, dich_dieu=m[3], dich_khoan=m[2], ngay_hieu_luc=eff,
                 noi_dung_moi="\n".join(moi) or None)
+
+    # 5. Sửa đổi cả văn bản chỉ nêu ở tên văn bản (VD sửa đổi định mức ở phụ lục, không theo điều/khoản)
+    for h in header:
+        if h.isupper() and "SỬA ĐỔI" in h and (sh := re.findall(SO_HIEU, h)):  # tên văn bản viết hoa
+            if not any(q.dich == sh[-1] and q.loai in ("sua_doi", "bo_sung") for q in found.values()):
+                add("sua_doi", sh[-1], h, ngay_hieu_luc=eff)
+            break
     return list(found.values())
 
 
