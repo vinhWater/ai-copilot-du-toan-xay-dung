@@ -1,0 +1,17 @@
+{
+  "_ghi_chu": "Nhãn quan hệ chuẩn (ground truth) để đo precision/recall của Relation Extraction. Gán tay từ chính văn bản data/raw/206_2026_ND-CP_457659.docx (số đoạn ghi ở _doan). CHƯA đối chiếu nguồn chính thống — người duyệt cần xác nhận rồi xóa dòng này.",
+  "so_hieu": "206/2026/NĐ-CP",
+  "nguon_file": "data/raw/206_2026_ND-CP_457659.docx",
+  "quan_he": [
+    {"_doan": 6,  "nguon": "206/2026/NĐ-CP", "dich": "63/2025/QH15",  "loai": "can_cu", "trang_thai_duyet": "da_duyet"},
+    {"_doan": 7,  "nguon": "206/2026/NĐ-CP", "dich": "72/2025/QH15",  "loai": "can_cu", "trang_thai_duyet": "da_duyet"},
+    {"_doan": 8,  "nguon": "206/2026/NĐ-CP", "dich": "135/2025/QH15", "loai": "can_cu", "trang_thai_duyet": "da_duyet"},
+    {"_doan": 9,  "nguon": "206/2026/NĐ-CP", "dich": "58/2024/QH15",  "loai": "can_cu", "trang_thai_duyet": "da_duyet"},
+    {"_doan": 10, "nguon": "206/2026/NĐ-CP", "dich": "64/2020/QH14",  "loai": "can_cu", "trang_thai_duyet": "da_duyet"},
+    {"_doan": 11, "nguon": "206/2026/NĐ-CP", "dich": "22/2023/QH15",  "loai": "can_cu", "trang_thai_duyet": "da_duyet"},
+    {"_doan": 12, "nguon": "206/2026/NĐ-CP", "dich": "89/2025/QH15",  "loai": "can_cu", "trang_thai_duyet": "da_duyet"},
+    {"_doan": 18, "nguon": "206/2026/NĐ-CP", "dich": "135/2025/QH15", "loai": "huong_dan", "dich_dieu": "74", "ngay_hieu_luc": "2026-07-01", "trang_thai_duyet": "da_duyet"},
+    {"_doan": 18, "nguon": "206/2026/NĐ-CP", "dich": "135/2025/QH15", "loai": "huong_dan", "dich_dieu": "76", "dich_khoan": "7", "ngay_hieu_luc": "2026-07-01", "trang_thai_duyet": "da_duyet"},
+    {"_doan": 347, "nguon": "206/2026/NĐ-CP", "dich": "10/2021/NĐ-CP", "loai": "thay_the", "ngay_hieu_luc": "2026-07-01", "trang_thai_duyet": "da_duyet"}
+  ]
+}

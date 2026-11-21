@@ -1,0 +1,100 @@
+{
+  "_canh_bao": "DỮ LIỆU MINH HỌA — chưa xác minh nguồn chính thống. Số hiệu, nội dung, ngày tháng đều giả.",
+  "van_ban": [
+    {
+      "so_hieu": "01/2026/ND-MINHHOA",
+      "loai": "nghi_dinh",
+      "co_quan_ban_hanh": "Cơ quan minh họa",
+      "ngay_ban_hanh": "2026-01-01",
+      "ngay_hieu_luc": "2026-02-01",
+      "tinh_trang": "con_hieu_luc",
+      "minh_hoa": true
+    },
+    {
+      "so_hieu": "02/2026/TT-MINHHOA",
+      "loai": "thong_tu",
+      "co_quan_ban_hanh": "Cơ quan minh họa",
+      "ngay_ban_hanh": "2026-02-01",
+      "ngay_hieu_luc": "2026-03-01",
+      "tinh_trang": "het_hieu_luc_mot_phan",
+      "minh_hoa": true
+    },
+    {
+      "so_hieu": "03/2026/TT-MINHHOA",
+      "loai": "thong_tu",
+      "co_quan_ban_hanh": "Cơ quan minh họa",
+      "ngay_ban_hanh": "2026-06-01",
+      "ngay_hieu_luc": "2026-07-01",
+      "tinh_trang": "con_hieu_luc",
+      "minh_hoa": true
+    }
+  ],
+  "dieu_khoan": [
+    {
+      "van_ban": "01/2026/ND-MINHHOA",
+      "dieu": "1",
+      "khoan": "1",
+      "tieu_de": "Phạm vi điều chỉnh (minh họa)",
+      "phien_ban": [
+        {"noi_dung": "Nội dung minh họa Điều 1 Khoản 1 nghị định — không phải văn bản thật.", "hieu_luc_tu": "2026-02-01"}
+      ]
+    },
+    {
+      "van_ban": "02/2026/TT-MINHHOA",
+      "dieu": "1",
+      "khoan": "1",
+      "tieu_de": "Định mức bê tông (minh họa)",
+      "phien_ban": [
+        {"noi_dung": "Nội dung minh họa về định mức bê tông móng — không phải văn bản thật.", "hieu_luc_tu": "2026-03-01"}
+      ]
+    },
+    {
+      "van_ban": "02/2026/TT-MINHHOA",
+      "dieu": "2",
+      "khoan": "1",
+      "tieu_de": "Chi phí dự phòng (minh họa)",
+      "phien_ban": [
+        {
+          "noi_dung": "Nội dung minh họa gốc Điều 2 Khoản 1 — không phải văn bản thật.",
+          "hieu_luc_tu": "2026-03-01",
+          "hieu_luc_den": "2026-07-01"
+        },
+        {
+          "noi_dung": "Nội dung minh họa đã sửa đổi Điều 2 Khoản 1 — không phải văn bản thật.",
+          "hieu_luc_tu": "2026-07-01",
+          "nguon_sua_doi": {"so_hieu": "03/2026/TT-MINHHOA", "dieu": "1"}
+        }
+      ]
+    }
+  ],
+  "quan_he": [
+    {"nguon": "02/2026/TT-MINHHOA", "dich": "01/2026/ND-MINHHOA", "loai": "can_cu", "trang_thai_duyet": "da_duyet"},
+    {"nguon": "03/2026/TT-MINHHOA", "dich": "02/2026/TT-MINHHOA", "loai": "sua_doi", "ngay_hieu_luc": "2026-07-01", "trang_thai_duyet": "da_duyet"},
+    {"nguon": "03/2026/TT-MINHHOA", "dich": "01/2026/ND-MINHHOA", "loai": "can_cu", "trang_thai_duyet": "de_xuat"}
+  ],
+  "dinh_muc": [
+    {
+      "ma_hieu": "MH.0001",
+      "ten_cong_tac": "Bê tông móng minh họa",
+      "don_vi": "m3",
+      "hao_phi": [
+        {"loai": "vat_lieu", "ten": "Vật liệu minh họa A", "don_vi": "m3", "gia_tri": 1.0},
+        {"loai": "nhan_cong", "ten": "Nhân công minh họa", "don_vi": "công", "gia_tri": 1.0},
+        {"loai": "may", "ten": "Máy minh họa", "don_vi": "ca", "gia_tri": 0.1}
+      ],
+      "can_cu_so_hieu": "02/2026/TT-MINHHOA",
+      "can_cu_phu_luc": "Phụ lục I"
+    },
+    {
+      "ma_hieu": "MH.0002",
+      "ten_cong_tac": "Cốt thép minh họa",
+      "don_vi": "tấn",
+      "hao_phi": [
+        {"loai": "vat_lieu", "ten": "Vật liệu minh họa B", "don_vi": "kg", "gia_tri": 1.0},
+        {"loai": "nhan_cong", "ten": "Nhân công minh họa", "don_vi": "công", "gia_tri": 1.0}
+      ],
+      "can_cu_so_hieu": "02/2026/TT-MINHHOA",
+      "can_cu_phu_luc": "Phụ lục I"
+    }
+  ]
+}
