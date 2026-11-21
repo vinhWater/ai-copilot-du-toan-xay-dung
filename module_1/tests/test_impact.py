@@ -7,20 +7,21 @@ import pytest
 from fastapi.testclient import TestClient
 
 import app.main as main
+from conftest import MINH_HOA
 from app.impact import gui_webhook, phan_tich
 from app.models import QuanHe
-from app.store import DATA_PATH, load
+from app.store import load
 
 
 def test_impact_sua_doi_ca_van_ban():
-    r = phan_tich(load(DATA_PATH), "03/2026/TT-MINHHOA")
+    r = phan_tich(load(MINH_HOA), "03/2026/TT-MINHHOA")
     assert r.van_ban == ["02/2026/TT-MINHHOA"]
     assert {(a.dieu, a.khoan) for a in r.dieu_khoan} == {("1", "1"), ("2", "1")}
     assert r.dinh_muc == ["MH.0001", "MH.0002"]
 
 
 def test_impact_cap_khoan_va_bo_qua_can_cu():
-    c = load(DATA_PATH)
+    c = load(MINH_HOA)
     c.quan_he = [
         QuanHe(nguon="X", dich="02/2026/TT-MINHHOA", loai="bai_bo", dich_dieu="2", dich_khoan="1",
                trang_thai_duyet="da_duyet"),
@@ -33,7 +34,7 @@ def test_impact_cap_khoan_va_bo_qua_can_cu():
 
 @pytest.fixture
 def client(monkeypatch):
-    monkeypatch.setattr(main, "CORPUS", load(DATA_PATH))
+    monkeypatch.setattr(main, "CORPUS", load(MINH_HOA))
     monkeypatch.setattr(main, "STATE", None)
     return TestClient(main.app)
 

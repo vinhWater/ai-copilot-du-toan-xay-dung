@@ -1,6 +1,6 @@
 # Legal Knowledge API + Graph View (Module 1)
 
-> ⚠️ `app/data/sample.json` là **DỮ LIỆU MINH HỌA** (giả). Bản ghi `minh_hoa: true` = minh họa hoặc chưa xác minh nguồn chính thống.
+> ⚠️ `app/data/sample.json` chứa NĐ 206/2026/NĐ-CP nạp tự động từ `data/raw/` (nguồn: Thư viện Pháp luật), **chưa đối chiếu nguồn chính thống**. Bản ghi `minh_hoa: true` = chưa xác minh. Dữ liệu giả `…-MINHHOA` chỉ còn trong `tests/fixtures/minh_hoa.json` cho test.
 
 ## Chạy
 

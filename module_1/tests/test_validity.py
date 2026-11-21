@@ -5,8 +5,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 import app.main as main
+from conftest import MINH_HOA
 from app.models import Corpus, DieuKhoan, PhienBan, QuanHe, VanBan
-from app.store import DATA_PATH, load, phien_ban_tai, tim_dieu_khoan
+from app.store import load, phien_ban_tai, tim_dieu_khoan
 from app.validity import ap_dung, tinh_trang
 
 D = date(2026, 7, 1)
@@ -71,7 +72,7 @@ def test_van_ban_vien_dan_khong_ro_tinh_trang():
 
 @pytest.fixture
 def client(monkeypatch):
-    monkeypatch.setattr(main, "CORPUS", load(DATA_PATH))
+    monkeypatch.setattr(main, "CORPUS", load(MINH_HOA))
     monkeypatch.setattr(main, "STATE", None)
     return TestClient(main.app)
 

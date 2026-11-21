@@ -1,9 +1,10 @@
 from datetime import date
 
+from conftest import MINH_HOA
 from app.models import CitationIn
-from app.store import DATA_PATH, graph, load, norms, phien_ban_tai, search, tim_dieu_khoan, verify
+from app.store import graph, load, norms, phien_ban_tai, search, tim_dieu_khoan, verify
 
-C = load(DATA_PATH)
+C = load(MINH_HOA)
 DK = tim_dieu_khoan(C, "02/2026/TT-MINHHOA", "2", "1")
 
 

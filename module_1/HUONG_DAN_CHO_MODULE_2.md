@@ -13,7 +13,7 @@
 - **Hiện tại:** API chạy bằng Docker: 6 endpoint tra cứu + duyệt quan hệ + impact + webhook + Graph View (cổng 3000). Dữ liệu mặc định vẫn là **MINH HỌA (giả)**.
 - **Tuần 8:** chuyển sang dữ liệu thật — **URL và format giữ nguyên**, Module 2 không phải sửa code.
 
-> ⚠️ **Dữ liệu hiện tại là GIẢ.** Số hiệu kiểu `02/2026/TT-MINHHOA`, nội dung, ngày tháng đều bịa để test. **Không** đưa vào luận văn, **không** hard-code vào prompt/test của Module 2 như kiến thức thật. Mọi bản ghi có `minh_hoa: true`.
+> ⚠️ **Ví dụ trong tài liệu này dùng dữ liệu GIẢ** (`02/2026/TT-MINHHOA`, chỉ còn trong fixture test). API hiện chứa văn bản thật nạp từ .docx (NĐ 206/2026/NĐ-CP…) nhưng **chưa xác minh** nguồn chính thống. **Không** đưa vào luận văn, **không** hard-code vào prompt/test của Module 2 như kiến thức thật. Mọi bản ghi có `minh_hoa: true`.
 
 ---
 
