@@ -85,13 +85,6 @@ def verify(c: Corpus, cit: CitationIn, as_of: date) -> VerifyOut:
                quote_match=match, current_text=pb.noi_dung)
 
 
-def save(c: Corpus, path: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(".tmp")
-    tmp.write_text(c.model_dump_json(indent=1), encoding="utf-8")
-    tmp.replace(path)
-
-
 def graph(c: Corpus, so_hieu: str, depth: int) -> GraphOut | None:
     """BFS vô hướng qua quan hệ đã duyệt, tối đa `depth` bước.
 

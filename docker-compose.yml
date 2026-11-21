@@ -1,13 +1,31 @@
 services:
+  db:
+    image: postgres:17.6
+    environment:
+      POSTGRES_DB: legal
+      POSTGRES_USER: legal
+      POSTGRES_PASSWORD: legal  # chỉ chạy local
+    ports:
+      - "5432:5432"
+    volumes:
+      - legal-db:/var/lib/postgresql/data
+      - ./module_1/tests/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U legal -d legal"]
+      interval: 2s
+      retries: 15
+
   legal-api:
     build: ./module_1
     ports:
       - "8000:8000"
     environment:
-      CORPUS_PATH: /app/state/corpus.json
+      DATABASE_URL: postgresql://legal:legal@db:5432/legal
+      TEST_DATABASE_URL: postgresql://legal:legal@db:5432/legal_test
       WEBHOOK_URLS: ${WEBHOOK_URLS:-}
-    volumes:
-      - legal-state:/app/state
+    depends_on:
+      db:
+        condition: service_healthy
 
   graph-view:
     build:
@@ -20,4 +38,4 @@ services:
       - legal-api
 
 volumes:
-  legal-state:
+  legal-db:

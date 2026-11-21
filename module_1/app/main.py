@@ -1,7 +1,6 @@
 import os
 import threading
 from datetime import date, datetime
-from pathlib import Path
 from typing import Literal
 from zoneinfo import ZoneInfo
 
@@ -10,7 +9,8 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException, Query
 from .impact import LOAI_THAY_DOI, gui_webhook, phan_tich
 from .models import (ArticleOut, CitationIn, DinhMuc, DuyetOut, ErrorOut, GraphOut, ImpactOut, QuanHe, SearchHit,
                      SearchIn, VanBan, VerifyOut)
-from .store import DATA_PATH, graph, load, norms, phien_ban_tai, save, search, tim_dieu_khoan, tim_van_ban, verify
+from . import db
+from .store import DATA_PATH, graph, load, norms, phien_ban_tai, search, tim_dieu_khoan, tim_van_ban, verify
 from .validity import ap_dung, tinh_trang
 
 app = FastAPI(
@@ -19,9 +19,22 @@ app = FastAPI(
     "Lỗi 404/409: `detail.code` ∈ document_not_found | article_not_found | not_in_force | "
     "relation_not_found | relation_not_pending.",
 )
-# CORPUS_PATH: file trạng thái (duyệt quan hệ, văn bản nạp mới). Không đặt = chỉ trong RAM, đọc sample.json.
-STATE = Path(os.environ["CORPUS_PATH"]) if os.environ.get("CORPUS_PATH") else None
-CORPUS = load(STATE if STATE and STATE.exists() else DATA_PATH)
+# DATABASE_URL: PostgreSQL lưu kho (duyệt quan hệ, văn bản nạp mới). Không đặt = chỉ trong RAM, đọc sample.json.
+DB_URL = os.environ.get("DATABASE_URL") or None
+
+
+def _khoi_tao():
+    if not DB_URL:
+        return load(DATA_PATH)
+    db.init(DB_URL)
+    c = db.load(DB_URL)
+    if c is None:  # DB trống → nạp dữ liệu khởi tạo
+        c = load(DATA_PATH)
+        db.save(c, DB_URL)
+    return c
+
+
+CORPUS = _khoi_tao()
 LOCK = threading.Lock()  # ponytail: 1 lock toàn cục + ghi cả file JSON; chuyển Postgres khi nhiều người duyệt cùng lúc
 VN = ZoneInfo("Asia/Ho_Chi_Minh")
 NOT_FOUND = {404: {"model": ErrorOut}}
@@ -34,8 +47,8 @@ def today_vn(now: datetime | None = None) -> date:
 
 
 def persist() -> None:
-    if STATE:
-        save(CORPUS, STATE)
+    if DB_URL:
+        db.save(CORPUS, DB_URL)
 
 
 def _err(status: int, code: str, message: str) -> HTTPException:

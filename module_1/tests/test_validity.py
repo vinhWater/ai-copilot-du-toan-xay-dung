@@ -73,7 +73,7 @@ def test_van_ban_vien_dan_khong_ro_tinh_trang():
 @pytest.fixture
 def client(monkeypatch):
     monkeypatch.setattr(main, "CORPUS", load(MINH_HOA))
-    monkeypatch.setattr(main, "STATE", None)
+    monkeypatch.setattr(main, "DB_URL", None)
     return TestClient(main.app)
 
 
@@ -98,10 +98,3 @@ def test_tinh_trang_theo_ngay_api(client):
     assert client.get("/documents/02/2026/TT-MINHHOA", params={"as_of_date": "2026-04-01"}).json()["tinh_trang"] == "con_hieu_luc"
     assert client.get("/documents/02/2026/TT-MINHHOA", params={"as_of_date": "2026-08-01"}).json()["tinh_trang"] == "het_hieu_luc_mot_phan"
 
-
-def test_luu_file_trang_thai(client, tmp_path, monkeypatch):
-    state = tmp_path / "corpus.json"
-    monkeypatch.setattr(main, "STATE", state)
-    rid = client.get("/relations", params={"trang_thai": "de_xuat"}).json()[0]["id"]
-    client.post(f"/relations/{rid}/approve")
-    assert next(q for q in load(state).quan_he if q.id == rid).trang_thai_duyet == "da_duyet"

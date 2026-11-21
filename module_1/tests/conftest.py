@@ -12,4 +12,4 @@ MINH_HOA = Path(__file__).parent / "fixtures" / "minh_hoa.json"
 @pytest.fixture(autouse=True)
 def corpus_minh_hoa(monkeypatch):
     monkeypatch.setattr(main, "CORPUS", load(MINH_HOA))
-    monkeypatch.setattr(main, "STATE", None)
+    monkeypatch.setattr(main, "DB_URL", None)

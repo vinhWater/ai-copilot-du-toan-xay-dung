@@ -35,7 +35,7 @@ def test_impact_cap_khoan_va_bo_qua_can_cu():
 @pytest.fixture
 def client(monkeypatch):
     monkeypatch.setattr(main, "CORPUS", load(MINH_HOA))
-    monkeypatch.setattr(main, "STATE", None)
+    monkeypatch.setattr(main, "DB_URL", None)
     return TestClient(main.app)
 
 
