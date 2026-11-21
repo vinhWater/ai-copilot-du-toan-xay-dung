@@ -16,8 +16,8 @@ SV2 (tôi): Relation Extraction, Knowledge Graph, Validity Agent, Impact Analysi
 SV1 (`sv-truc`): Parse Agent, chunking & indexing, Norm Database, pipeline cập nhật (ingest), màn hình duyệt → được code nhưng **KHÔNG commit trên `sv-thinh`**, để untracked cho SV1 tự commit.
 
 File SV1 hiện có (luôn bỏ ra khi `git add`, không dùng `git add .`/`-A`):
-- `module_1/app/parse.py`, `module_1/app/ingest.py`
-- `module_1/tests/test_parse.py`, `module_1/tests/test_ingest.py`
+- `module_1/app/parse.py`, `module_1/app/ingest.py`, `module_1/app/ocr.py`
+- `module_1/tests/test_parse.py`, `module_1/tests/test_ingest.py`, `module_1/tests/test_ocr.py`
 - `module_1/frontend/app/review/`
 Thêm file SV1 mới → bổ sung vào danh sách này. Code đã commit không được import cứng file SV1 (main.py chỉ nạp `ingest` nếu có).
 
