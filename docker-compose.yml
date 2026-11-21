@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: legal
       POSTGRES_PASSWORD: legal  # chỉ chạy local
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - legal-db:/var/lib/postgresql/data
       - ./module_1/tests/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro

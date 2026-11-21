@@ -11,7 +11,7 @@ docker compose up --build        # từ thư mục gốc repo
 - Swagger UI: http://localhost:8000/docs
 - OpenAPI spec (giao Module 2): http://localhost:8000/openapi.json
 - Lược đồ văn bản: http://localhost:3000/?so_hieu=… · nhúng: http://localhost:3000/embed/graph?so_hieu=…
-- Kho lưu ở PostgreSQL (service `db`, volume `legal-db`, schema `app/schema.sql`; DB trống thì nạp `sample.json`). Xem: `docker compose exec db psql -U legal -d legal`. `WEBHOOK_URLS=url1,url2` để nhận `document.updated`
+- Kho lưu ở PostgreSQL (service `db`, volume `legal-db`, schema `app/schema.sql`; DB trống thì nạp `sample.json`). Xem: `docker compose exec db psql -U legal -d legal`, hoặc pgAdmin `localhost:5433` (user/pass/db: `legal`; cổng 5433 để không trùng Postgres cài sẵn trên máy). `WEBHOOK_URLS=url1,url2` để nhận `document.updated`
 
 ## Test
 
