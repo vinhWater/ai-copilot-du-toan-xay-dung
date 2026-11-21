@@ -5,6 +5,13 @@ import { FormEvent, useState } from "react";
 import GraphView from "@/components/GraphView";
 import { TINH_TRANG, VanBan } from "@/lib/api";
 
+/** Nhận cả tên file trong data/raw: "36_2026_TT-BXD_712408.docx" → "36/2026/TT-BXD", "206_2026_ND-CP" → "206/2026/NĐ-CP". */
+export function chuanHoaSoHieu(s: string): string {
+  const t = s.trim().replace(/\.docx?$/i, "");
+  if (!t.includes("_")) return t;
+  return t.replace(/_\d+$/, "").replaceAll("_", "/").replace(/\bND\b/g, "NĐ");
+}
+
 export default function Explorer() {
   const params = useSearchParams();
   const router = useRouter();
@@ -23,7 +30,9 @@ export default function Explorer() {
   const submit = (e: FormEvent) => {
     e.preventDefault();
     setSelected(null);
-    go({ so_hieu: draft.trim() });
+    const so = chuanHoaSoHieu(draft);
+    setDraft(so);
+    go({ so_hieu: so });
   };
 
   return (
